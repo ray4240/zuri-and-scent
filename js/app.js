@@ -10,48 +10,101 @@ const BUSINESS_WHATSAPP = "254729006573";
 const PAYMENT_PHONE_DISPLAY = "+254 704 423 457";
 const PAYMENT_PHONE_RAW = "+254704423457";
 
-// Hero Slideshow State
+// Hero Slideshow State (4 Videos)
 let currentHeroSlide = 0;
 let heroSlideInterval = null;
+let isHeroInView = true;
 const HERO_SLIDE_LABELS = [
-  "01 / 05 • Coastal Drapes",
-  "02 / 05 • Signature Scents",
-  "03 / 05 • Resort Horizons",
-  "04 / 05 • Ocean Tides",
-  "05 / 05 • Swahili Coast"
+  "01 / 04 • Coastal Drapes",
+  "02 / 04 • Signature Scents",
+  "03 / 04 • Resort Horizons",
+  "04 / 04 • Ocean Tides"
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
   initHeroSlideshow();
+  initHeroVisibilityObserver();
   renderProducts('all');
   renderBundles();
   updateCartUI();
 });
 
+function shouldSaveData() {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn) return false;
+  return Boolean(conn.saveData) || ['slow-2g', '2g'].includes(conn.effectiveType);
+}
+
 function attachSlideVideos(slideEl) {
-  if (!slideEl) return;
+  if (!slideEl || shouldSaveData()) return;
   const videos = slideEl.querySelectorAll("video[data-src]");
   videos.forEach(video => {
     const sourceUrl = video.dataset.src;
     if (sourceUrl && !video.getAttribute("src")) {
+      video.preload = "metadata";
       video.setAttribute("src", sourceUrl);
       video.load();
     }
   });
 }
 
+function playWhenReady(video) {
+  if (!video || shouldSaveData() || document.hidden || !isHeroInView) return;
+
+  const tryPlay = () => {
+    if (!document.hidden && isHeroInView) {
+      video.play().catch(() => {});
+    }
+  };
+
+  if (video.readyState >= 2) {
+    tryPlay();
+  } else {
+    video.addEventListener("canplay", tryPlay, { once: true });
+  }
+}
+
 function playSlideVideos(slideEl) {
   if (!slideEl) return;
   attachSlideVideos(slideEl);
-  slideEl.querySelectorAll("video").forEach(video => {
-    video.play().catch(() => {});
-  });
+  slideEl.querySelectorAll("video").forEach(video => playWhenReady(video));
 }
 
 function pauseSlideVideos(slideEl) {
   if (!slideEl) return;
   slideEl.querySelectorAll("video").forEach(video => {
     video.pause();
+  });
+}
+
+function initHeroVisibilityObserver() {
+  const heroSection = document.querySelector("section.relative");
+  if (!heroSection || !("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        isHeroInView = entry.isIntersecting;
+        const activeSlide = document.querySelectorAll(".hero-slide")[currentHeroSlide];
+        if (isHeroInView && !document.hidden) {
+          playSlideVideos(activeSlide);
+        } else {
+          pauseSlideVideos(activeSlide);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  observer.observe(heroSection);
+
+  document.addEventListener("visibilitychange", () => {
+    const activeSlide = document.querySelectorAll(".hero-slide")[currentHeroSlide];
+    if (document.hidden) {
+      pauseSlideVideos(activeSlide);
+    } else if (isHeroInView) {
+      playSlideVideos(activeSlide);
+    }
   });
 }
 
@@ -62,14 +115,20 @@ function initHeroSlideshow() {
 
   playSlideVideos(slides[0]);
 
-  // Pre-warm slide 2 after initial page paint
   if (slides[1]) {
-    setTimeout(() => attachSlideVideos(slides[1]), 1500);
+    const warmNext = () => attachSlideVideos(slides[1]);
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(warmNext, { timeout: 2000 });
+    } else {
+      setTimeout(warmNext, 1500);
+    }
   }
 
   heroSlideInterval = setInterval(() => {
-    const nextIndex = (currentHeroSlide + 1) % slides.length;
-    goToHeroSlide(nextIndex, false);
+    if (!document.hidden && isHeroInView) {
+      const nextIndex = (currentHeroSlide + 1) % slides.length;
+      goToHeroSlide(nextIndex, false);
+    }
   }, 6500);
 }
 
@@ -91,7 +150,6 @@ function goToHeroSlide(index, resetTimer = true) {
     }
   });
 
-  // Pre-warm the next slide in the background
   const upcomingSlide = slides[(index + 1) % slides.length];
   attachSlideVideos(upcomingSlide);
 
@@ -149,6 +207,7 @@ function renderProducts(filter = 'all') {
           <img
             src="${product.image}"
             alt="${product.name}"
+            loading="lazy"
             class="product-img-zoom w-full h-full object-cover object-top"
             onerror="this.src='https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80'"
           />
