@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zuri &amp; Scent | Luxury Coastal Deras &amp; Fine Perfumery — Nationwide Delivery Across Kenya</title>
+
+  <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#161311',
+            sand: '#FAF7F2',
+            sandDark: '#EFE9DF',
+            gold: '#C59B48',
+            goldDark: '#A67C2E',
+            terracotta: '#9E472A',
+            sage: '#4A5D4E',
+            sageLight: '#E7EDE8',
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-sand text-obsidian antialiased">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="bg-obsidian text-sand text-xs py-2.5 px-4 text-center tracking-wider">
+    ✨ <span class="text-gold font-semibold">100% IN-STOCK &amp; READY FOR DISPATCH</span> — Nationwide Courier &amp; Parcel Delivery Across All 47 Counties
+  </div>
+
+  <!-- NAVIGATION -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-stone-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <span class="w-9 h-9 rounded-full bg-obsidian text-gold font-serif text-xl font-bold flex items-center justify-center">Z</span>
+        <div>
+          <span class="font-serif text-2xl font-bold tracking-tight text-obsidian block leading-none">Zuri &amp; Scent</span>
+          <span class="text-[10px] uppercase tracking-[0.25em] text-stone-500">Nationwide • Kenya</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-stone-700">
+        <a href="#collections" class="hover:text-goldDark transition-colors">Shop All</a>
+        <a href="#collections" onclick="renderProducts('dera')" class="hover:text-goldDark transition-colors">Coastal Deras</a>
+        <a href="#collections" onclick="renderProducts('perfume-women')" class="hover:text-goldDark transition-colors">Women's Scents</a>
+        <a href="#collections" onclick="renderProducts('perfume-men')" class="hover:text-goldDark transition-colors">Men's Scents</a>
+        <a href="#bundles" class="hover:text-goldDark transition-colors">Curated Sets</a>
+        <a href="#lookbook" class="hover:text-goldDark transition-colors">Coastal Campaign</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button onclick="openCart()" class="relative bg-obsidian text-sand px-4 py-2.5 rounded-full text-sm font-medium hover:bg-goldDark transition-colors flex items-center gap-2 cursor-pointer">
+          <span>Shopping Bag</span>
+          <span id="cart-count" class="bg-gold text-obsidian text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION WITH 5-VIDEO COASTAL & PERFUME SLIDESHOW -->
+  <section class="relative min-h-[88vh] flex items-center bg-obsidian overflow-hidden">
+    <!-- Video Slideshow Container -->
+    <div id="hero-video-slideshow" class="absolute inset-0 w-full h-full">
+      <video class="hero-slide-video active absolute inset-0 w-full h-full object-cover opacity-65 transition-opacity duration-1000" autoplay muted loop playsinline>
+        <source src="assets/images/background/woman-dera.mp4" type="video/mp4" />
+      </video>
+      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
+        <source src="assets/images/background/woman-perfume.mp4" type="video/mp4" />
+      </video>
+      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
+        <source src="assets/images/background/beach-scene.mp4" type="video/mp4" />
+      </video>
+      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
+        <source src="assets/images/background/ocean-tides.mp4" type="video/mp4" />
+      </video>
+      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
+        <source src="assets/images/background/ocean-waves.mp4" type="video/mp4" />
+      </video>
+    </div>
+
+    <div class="hero-overlay absolute inset-0"></div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+      <div class="max-w-2xl">
+        <span class="inline-block text-gold text-xs uppercase tracking-[0.28em] font-semibold mb-4">
+          Kenyan Resort Couture &amp; Haute Parfumerie
+        </span>
+        <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl font-semibold text-sand leading-[1.08] mb-6">
+          Draped in Coastal Silk. Defined by <span class="italic text-gold">Signature Scent.</span>
+        </h1>
+        <p class="text-stone-300 text-lg leading-relaxed mb-8">
+          An elevated house uniting hand-dyed coastal Deras with authentic designer and Arabian fragrances for women and men. Ready in stock with fast delivery to every town and county across Kenya.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#collections" class="bg-gold hover:bg-white text-obsidian font-semibold px-7 py-4 rounded-xl transition-colors">
+            Explore Collection
+          </a>
+          <a href="#bundles" class="border border-sand/40 hover:border-gold text-sand px-7 py-4 rounded-xl font-medium transition-colors">
+            Shop Scent &amp; Drape Sets
+          </a>
+        </div>
+
+        <!-- Brand Pillars -->
+        <div class="grid grid-cols-3 gap-6 mt-12 pt-8 border-t border-white/15 text-sand">
+          <div>
+            <p class="font-serif text-2xl font-bold text-gold">100%</p>
+            <p class="text-xs text-stone-300">In-Stock Inventory</p>
+          </div>
+          <div>
+            <p class="font-serif text-2xl font-bold text-gold">47 Counties</p>
+            <p class="text-xs text-stone-300">Countrywide Coverage</p>
+          </div>
+          <div>
+            <p class="font-serif text-2xl font-bold text-gold">Express</p>
+            <p class="text-xs text-stone-300">Nationwide Dispatch</p>
+          </div>
+        </div>
+
+        <!-- Slideshow Controls / Indicators -->
+        <div class="flex items-center gap-2.5 mt-8">
+          <button onclick="goToHeroSlide(0)" class="hero-dot w-8 h-1.5 rounded-full bg-gold transition-all cursor-pointer" aria-label="Slide 1"></button>
+          <button onclick="goToHeroSlide(1)" class="hero-dot w-3 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all cursor-pointer" aria-label="Slide 2"></button>
+          <button onclick="goToHeroSlide(2)" class="hero-dot w-3 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all cursor-pointer" aria-label="Slide 3"></button>
+          <button onclick="goToHeroSlide(3)" class="hero-dot w-3 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all cursor-pointer" aria-label="Slide 4"></button>
+          <button onclick="goToHeroSlide(4)" class="hero-dot w-3 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all cursor-pointer" aria-label="Slide 5"></button>
+          <span id="hero-slide-label" class="text-[11px] uppercase tracking-widest text-stone-300 ml-2">01 / 05 • Coastal Drapes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE STYLE & SCENT MATCHER -->
+  <section class="py-16 bg-sandDark border-b border-stone-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-stone-200/80">
+        <div class="text-center max-w-xl mx-auto mb-8">
+          <span class="text-xs uppercase tracking-widest text-goldDark font-bold">Personal Concierge</span>
+          <h2 class="font-serif text-3xl sm:text-4xl font-semibold text-obsidian mt-1">Curate Your Signature Pairing</h2>
+          <p class="text-sm text-stone-600 mt-2">Select your occasion and fragrance preference to match an in-stock Dera with its ideal scent.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Occasion / Vibe</label>
+            <select id="quiz-mood" class="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm bg-sand focus:outline-none focus:border-gold">
+              <option value="sunset">Coastal Sunset &amp; Resort Brunch</option>
+              <option value="evening">Evening Dinner &amp; Luxury Hosting</option>
+              <option value="minimal">Effortless Everyday Elegance</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Fragrance Profile</label>
+            <select id="quiz-gender" class="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm bg-sand focus:outline-none focus:border-gold">
+              <option value="women">Women's &amp; Unisex Gourmand/Floral</option>
+              <option value="men">Men's Woody, Spicy &amp; Oud</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button onclick="recommendPairing()" class="w-full bg-obsidian hover:bg-goldDark text-sand font-semibold py-3 px-6 rounded-xl transition-colors cursor-pointer">
+              Find My Pairing
+            </button>
+          </div>
+        </div>
+
+        <div id="quiz-result"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CATALOG SECTION -->
+  <section id="collections" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+      <div>
+        <span class="text-xs uppercase tracking-widest text-goldDark font-bold">Ready for Immediate Dispatch</span>
+        <h2 class="font-serif text-4xl sm:text-5xl font-semibold text-obsidian mt-1">The Curated Collection</h2>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="flex flex-wrap gap-2">
+        <button data-filter="all" onclick="renderProducts('all')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer">
+          All Items (13)
+        </button>
+        <button data-filter="dera" onclick="renderProducts('dera')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer">
+          Coastal Deras (5)
+        </button>
+        <button data-filter="perfume-women" onclick="renderProducts('perfume-women')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer">
+          Women's &amp; Unisex Scents (4)
+        </button>
+        <button data-filter="perfume-men" onclick="renderProducts('perfume-men')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium border transition-colors cursor-pointer">
+          Men's Scents (4)
+        </button>
+      </div>
+    </div>
+
+    <!-- Product Grid populated by js/app.js -->
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7"></div>
+  </section>
+
+  <!-- CURATED BUNDLES SECTION -->
+  <section id="bundles" class="py-20 bg-obsidian text-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-2xl mb-12">
+        <span class="text-xs uppercase tracking-widest text-gold font-bold">Signature Sets</span>
+        <h2 class="font-serif text-4xl sm:text-5xl font-semibold mt-1">Scent &amp; Drape Bundles</h2>
+        <p class="text-stone-300 mt-3">Thoughtfully paired garments and fragrances curated by our stylists—enjoy instant bundle savings on every set with delivery anywhere in Kenya.</p>
+      </div>
+
+      <div id="bundles-grid" class="grid grid-cols-1 md:grid-cols-3 gap-7"></div>
+    </div>
+  </section>
+
+  <!-- COASTAL CAMPAIGN & VIDEO SHOWCASE -->
+  <section id="lookbook" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="text-xs uppercase tracking-widest text-goldDark font-bold">Coastal Campaign • Delivered Countrywide</span>
+        <h2 class="font-serif text-4xl sm:text-5xl font-semibold text-obsidian mt-2 mb-5">
+          Crafted for Ocean Breezes &amp; Golden Hours
+        </h2>
+        <p class="text-stone-600 leading-relaxed mb-6">
+          Every Zuri &amp; Scent Dera is hand-dyed in small coastal batches using breathable, flowing fabrics designed to carry fine fragrance notes effortlessly—shipped directly to clients nationwide.
+        </p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-sandDark p-4 rounded-2xl border border-stone-200">
+            <p class="font-serif text-xl font-bold text-obsidian">100% Breathable Silk-Rayon</p>
+            <p class="text-xs text-stone-600 mt-1">Color-fast coastal tie-dye crafted for warm days &amp; evening elegance.</p>
+          </div>
+          <div class="bg-sandDark p-4 rounded-2xl border border-stone-200">
+            <p class="font-serif text-xl font-bold text-obsidian">Authentic Eau de Parfums</p>
+            <p class="text-xs text-stone-600 mt-1">Sealed designer &amp; Arabian fragrances curated to last 12+ hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative rounded-3xl overflow-hidden shadow-xl bg-obsidian aspect-video">
+        <video
+          class="w-full h-full object-cover"
+          autoplay
+          muted
+          loop
+          playsinline
+          poster="assets/images/deras/Dera-2.png">
+          <source src="assets/images/background/woman-perfume.mp4" type="video/mp4" />
+        </video>
+        <div class="absolute bottom-4 left-4 bg-obsidian/80 backdrop-blur-md text-sand px-4 py-2 rounded-full text-xs">
+          Zuri &amp; Scent • Coastal Resort &amp; Fragrance Film
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-obsidian text-stone-400 py-14 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <div>
+        <span class="font-serif text-2xl font-bold text-sand">Zuri &amp; Scent</span>
+        <p class="text-sm mt-2 max-w-md">Serving clients nationwide across Kenya. Authentic fine fragrances &amp; bespoke coastal resort wear delivered to your doorstep or preferred pickup point.</p>
+      </div>
+      <div class="text-sm">
+        <p class="text-sand font-medium">Direct Client Concierge</p>
+        <p class="mt-1">M-Pesa Till / Paybill Accepted • Countrywide Dispatch</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SLIDE-OVER SHOPPING BAG DRAWER -->
+  <div id="cart-backdrop" onclick="closeCart()" class="fixed inset-0 bg-obsidian/60 backdrop-blur-xs z-50 hidden"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-sand z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-stone-200">
+      <h3 class="font-serif text-2xl font-bold text-obsidian">Your Shopping Bag</h3>
+      <button onclick="closeCart()" class="text-stone-500 hover:text-obsidian text-2xl leading-none cursor-pointer">&times;</button>
+    </div>
+
+    <div id="cart-items" class="flex-1 overflow-y-auto my-4"></div>
+
+    <div class="pt-4 border-t border-stone-200">
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <input id="customer-name" type="text" placeholder="Your Full Name" class="px-3 py-2 text-xs rounded-lg border border-stone-300 bg-white" />
+        <input id="delivery-location" type="text" placeholder="Town / County (e.g. Nakuru, Eldoret)" class="px-3 py-2 text-xs rounded-lg border border-stone-300 bg-white" />
+      </div>
+      <div id="cart-summary"></div>
+    </div>
+  </aside>
+
+  <!-- SCRIPTS -->
+  <script src="js/products.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

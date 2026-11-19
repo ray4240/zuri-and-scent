@@ -1,0 +1,61 @@
+/* Custom Styles & Animations for Zuri & Scent */
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-color: #FAF7F2;
+    color: #161311;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #C59B48;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A67C2E;
+}
+
+/* Smooth Transitions & Card Hover */
+.product-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 35px -12px rgba(22, 19, 17, 0.12);
+}
+
+.product-img-zoom {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.product-card:hover .product-img-zoom {
+  transform: scale(1.06);
+}
+
+/* Hero Gradient Overlay */
+.hero-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(22, 19, 17, 0.90) 0%,
+    rgba(22, 19, 17, 0.72) 50%,
+    rgba(22, 19, 17, 0.45) 100%
+  );
+}
+
+/* Glassmorphism Navigation */
+.glass-nav {
+  background: rgba(250, 247, 242, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
