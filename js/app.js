@@ -28,10 +28,44 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartUI();
 });
 
+function attachSlideVideos(slideEl) {
+  if (!slideEl) return;
+  const videos = slideEl.querySelectorAll("video[data-src]");
+  videos.forEach(video => {
+    const sourceUrl = video.dataset.src;
+    if (sourceUrl && !video.getAttribute("src")) {
+      video.setAttribute("src", sourceUrl);
+      video.load();
+    }
+  });
+}
+
+function playSlideVideos(slideEl) {
+  if (!slideEl) return;
+  attachSlideVideos(slideEl);
+  slideEl.querySelectorAll("video").forEach(video => {
+    video.play().catch(() => {});
+  });
+}
+
+function pauseSlideVideos(slideEl) {
+  if (!slideEl) return;
+  slideEl.querySelectorAll("video").forEach(video => {
+    video.pause();
+  });
+}
+
 // Initialize Auto-Rotating Hero Video Slideshow
 function initHeroSlideshow() {
-  const slides = document.querySelectorAll(".hero-slide-video");
+  const slides = document.querySelectorAll(".hero-slide");
   if (!slides.length) return;
+
+  playSlideVideos(slides[0]);
+
+  // Pre-warm slide 2 after initial page paint
+  if (slides[1]) {
+    setTimeout(() => attachSlideVideos(slides[1]), 1500);
+  }
 
   heroSlideInterval = setInterval(() => {
     const nextIndex = (currentHeroSlide + 1) % slides.length;
@@ -40,21 +74,26 @@ function initHeroSlideshow() {
 }
 
 function goToHeroSlide(index, resetTimer = true) {
-  const slides = document.querySelectorAll(".hero-slide-video");
+  const slides = document.querySelectorAll(".hero-slide");
   const dots = document.querySelectorAll(".hero-dot");
   const label = document.getElementById("hero-slide-label");
   if (!slides.length) return;
 
-  slides.forEach((video, i) => {
+  slides.forEach((slide, i) => {
     if (i === index) {
-      video.classList.remove("opacity-0");
-      video.classList.add("opacity-65");
-      video.play().catch(() => {});
+      slide.classList.remove("opacity-0", "pointer-events-none");
+      slide.classList.add("opacity-100");
+      playSlideVideos(slide);
     } else {
-      video.classList.remove("opacity-65");
-      video.classList.add("opacity-0");
+      slide.classList.remove("opacity-100");
+      slide.classList.add("opacity-0", "pointer-events-none");
+      pauseSlideVideos(slide);
     }
   });
+
+  // Pre-warm the next slide in the background
+  const upcomingSlide = slides[(index + 1) % slides.length];
+  attachSlideVideos(upcomingSlide);
 
   dots.forEach((dot, i) => {
     if (i === index) {

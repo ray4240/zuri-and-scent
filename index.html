@@ -37,6 +37,20 @@
 
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    /* Fill landscape side-bars on portrait videos smoothly */
+    @media (orientation: landscape) {
+      .video-portrait {
+        object-fit: contain !important;
+        background-color: #161311;
+      }
+    }
+    .hero-backdrop-blur {
+      transform: scale(1.18);
+      filter: blur(22px) brightness(0.55);
+    }
+  </style>
 </head>
 <body class="bg-sand text-obsidian antialiased">
 
@@ -78,27 +92,84 @@
   <section class="relative min-h-[88vh] flex items-center bg-obsidian overflow-hidden">
     <!-- Video Slideshow Container -->
     <div id="hero-video-slideshow" class="absolute inset-0 w-full h-full">
-      <video class="hero-slide-video active absolute inset-0 w-full h-full object-cover opacity-65 transition-opacity duration-1000" autoplay muted loop playsinline>
-        <source src="assets/images/background/woman-dera.mp4" type="video/mp4" />
-      </video>
-      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
-        <source src="assets/images/background/woman-perfume.mp4" type="video/mp4" />
-      </video>
-      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
-        <source src="assets/images/background/beach-scene.mp4" type="video/mp4" />
-      </video>
-      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
-        <source src="assets/images/background/ocean-tides.mp4" type="video/mp4" />
-      </video>
-      <video class="hero-slide-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000" autoplay muted loop playsinline>
-        <source src="assets/images/background/ocean-waves.mp4" type="video/mp4" />
-      </video>
+      <!-- Slide 1 -->
+      <div class="hero-slide active absolute inset-0 w-full h-full opacity-100 transition-opacity duration-1000">
+        <video
+          data-src="assets/images/background/woman-dera.mp4"
+          poster="assets/images/deras/Dera-1.png"
+          class="hero-slide-video w-full h-full object-cover opacity-65"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="hero-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000 pointer-events-none">
+        <video
+          data-src="assets/images/background/woman-perfume.mp4"
+          poster="assets/images/deras/Dera-2.png"
+          class="hero-slide-video w-full h-full object-cover opacity-65"
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="hero-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000 pointer-events-none">
+        <video
+          data-src="assets/images/background/beach-scene.mp4"
+          poster="assets/images/deras/Dera-3.png"
+          class="hero-slide-video w-full h-full object-cover opacity-65"
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="hero-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000 pointer-events-none">
+        <video
+          data-src="assets/images/background/ocean-tides.mp4"
+          poster="assets/images/deras/Dera-4.png"
+          class="hero-slide-video w-full h-full object-cover opacity-65"
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+      </div>
+
+      <!-- Slide 5 (Portrait video with blurred ambient fill in landscape view) -->
+      <div class="hero-slide absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000 pointer-events-none overflow-hidden">
+        <video
+          data-src="assets/images/background/ocean-waves.mp4"
+          poster="assets/images/deras/Dera-5.png"
+          class="hero-backdrop-video hero-backdrop-blur hidden md:block absolute inset-0 w-full h-full object-cover"
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+        <video
+          data-src="assets/images/background/ocean-waves.mp4"
+          poster="assets/images/deras/Dera-5.png"
+          class="hero-slide-video video-portrait relative z-10 w-full h-full object-cover opacity-75"
+          muted
+          loop
+          playsinline
+          preload="none"
+        ></video>
+      </div>
     </div>
 
-    <div class="hero-overlay absolute inset-0"></div>
-
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-      <div class="max-w-2xl">
+    <div class="hero-overlay relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full pointer-events-none">
+      <div class="max-w-2xl pointer-events-auto">
         <span class="inline-block text-gold text-xs uppercase tracking-[0.28em] font-semibold mb-4">
           Kenyan Resort Couture &amp; Haute Parfumerie
         </span>
@@ -256,6 +327,7 @@
           muted
           loop
           playsinline
+          preload="metadata"
           poster="assets/images/deras/Dera-2.png">
           <source src="assets/images/background/woman-perfume.mp4" type="video/mp4" />
         </video>
@@ -275,7 +347,7 @@
       </div>
       <div class="text-sm">
         <p class="text-sand font-medium">Direct Client Concierge</p>
-        <p class="mt-1">M-Pesa Till / Paybill Accepted • Countrywide Dispatch</p>
+        <p class="mt-1">M-Pesa Send Money: +254 704 423 457 • Countrywide Dispatch</p>
       </div>
     </div>
   </footer>
