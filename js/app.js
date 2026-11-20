@@ -219,7 +219,7 @@ function renderProducts(filter = 'all') {
             alt="${product.name}"
             loading="lazy"
             class="product-img-zoom w-full h-full object-cover object-top"
-            onerror="this.src='https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80'"
+            onerror="this.onerror=null;this.src='assets/images/perfumes/placeholder.svg'"
           />
           <span class="absolute top-3 left-3 bg-obsidian/85 text-sand text-[11px] font-medium tracking-wider uppercase px-3 py-1 rounded-full backdrop-blur-sm">
             ${product.badge}
@@ -264,31 +264,37 @@ function renderBundles() {
   const container = document.getElementById("bundles-grid");
   if (!container) return;
 
-  container.innerHTML = CURATED_BUNDLES.map(bundle => `
-    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-6 flex flex-col justify-between text-sand">
-      <div>
+  const fallback = "assets/images/deras/Dera-1.png";
+  container.innerHTML = CURATED_BUNDLES.map(bundle => {
+    const dera = getProduct(bundle.deraId);
+    const perfume = getProduct(bundle.perfumeId);
+    return `
+    <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl overflow-hidden flex flex-col justify-between text-sand">
+      <div class="grid grid-cols-5 h-56 bg-obsidian/40">
+        <img src="${dera.image}" alt="${dera.name}" loading="lazy" class="col-span-3 w-full h-full object-cover object-top" />
+        <img src="${perfume.image}" alt="${perfume.name}" loading="lazy" class="col-span-2 w-full h-full object-cover"
+          onerror="this.onerror=null;this.src='${fallback}'" />
+      </div>
+      <div class="p-6 pb-0">
         <div class="flex items-center justify-between mb-3">
-          <span class="bg-gold text-obsidian text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-            ${bundle.tag}
-          </span>
+          <span class="bg-gold text-obsidian text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">${bundle.tag}</span>
           <span class="text-xs text-stone-300">Ready for Dispatch</span>
         </div>
         <h3 class="font-serif text-2xl font-semibold mb-2">${bundle.name}</h3>
         <p class="text-sm text-stone-300 mb-4">${bundle.items}</p>
       </div>
-      <div class="pt-4 border-t border-white/15 flex items-center justify-between">
+      <div class="m-6 mt-0 pt-4 border-t border-white/15 flex items-center justify-between">
         <div>
           <span class="text-xs text-stone-400 line-through block">${formatKES(bundle.regularPrice)}</span>
           <span class="text-xl font-bold text-gold">${formatKES(bundle.bundlePrice)}</span>
         </div>
-        <button
-          onclick="addBundleToCart('${bundle.deraId}', '${bundle.perfumeId}')"
+        <button onclick="addBundleToCart('${bundle.deraId}', '${bundle.perfumeId}')"
           class="bg-gold hover:bg-white text-obsidian font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
           Add Set
         </button>
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
 }
 
 // ---------- Sizes ----------

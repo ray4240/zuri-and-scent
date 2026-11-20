@@ -15,7 +15,7 @@ zuri-and-scent/
 └── assets/
     ├── images/
     │   ├── deras/              # Your 5 uploaded Dera product photos (already linked!)
-    │   └── perfumes/           # Optional folder for local perfume bottle photos
+    │   └── perfumes/           # Bottle graphics (swap each .svg for a real photo and update image: in products.js)
     └── videos/                 # Drop your Pexels coastal video here as 'coastal-campaign.mp4'
 ```
 
