@@ -221,7 +221,7 @@ function renderProducts(filter = 'all') {
             class="product-img-zoom w-full h-full object-cover object-top"
             onerror="this.onerror=null;this.src='assets/images/perfumes/placeholder.svg'"
           />
-          <span class="absolute top-3 left-3 bg-obsidian/85 text-sand text-[11px] font-medium tracking-wider uppercase px-3 py-1 rounded-full backdrop-blur-sm">
+          <span class="absolute ${product.category === 'dera' ? 'top-3' : 'bottom-3'} left-3 bg-obsidian/85 text-sand text-[11px] font-medium tracking-wider uppercase px-3 py-1 rounded-full backdrop-blur-sm">
             ${product.badge}
           </span>
         </div>
