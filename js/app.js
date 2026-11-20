@@ -41,7 +41,8 @@ function attachSlideVideos(slideEl) {
   videos.forEach(video => {
     const sourceUrl = video.dataset.src;
     if (sourceUrl && !video.getAttribute("src")) {
-      video.preload = "metadata";
+      video.preload = "auto";
+      video.muted = true;
       video.setAttribute("src", sourceUrl);
       video.load();
     }
@@ -53,7 +54,16 @@ function playWhenReady(video) {
 
   const tryPlay = () => {
     if (!document.hidden && isHeroInView) {
-      video.play().catch(() => {});
+      video.muted = true;
+      const p = video.play();
+      if (p && p.catch) {
+        // Some browsers block autoplay until the first touch/click: retry once then.
+        p.catch(() => {
+          const retry = () => { if (isHeroInView) video.play().catch(() => {}); };
+          ["touchstart", "click", "scroll"].forEach(ev =>
+            window.addEventListener(ev, retry, { once: true, passive: true }));
+        });
+      }
     }
   };
 
@@ -225,16 +235,25 @@ function renderProducts(filter = 'all') {
         </div>
       </div>
 
-      <div class="px-5 pb-5 pt-2 flex items-center justify-between border-t border-stone-100">
-        <div>
-          <span class="text-xs text-stone-400 block">In Stock</span>
-          <span class="text-lg font-bold text-obsidian">${formatKES(product.price)}</span>
+      <div class="px-5 pb-5 pt-3 border-t border-stone-100">
+        <div class="mb-3">
+          <label for="size-${product.id}" class="block text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1">${product.category === 'dera' ? 'Dera Size' : 'Bottle Size'}</label>
+          <select id="size-${product.id}" onchange="onCardSizeChange('${product.id}')" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm bg-sand focus:outline-none focus:border-gold">
+            ${sizeOptionsHTML(product)}
+          </select>
+          <p id="size-err-${product.id}" class="hidden text-xs text-terracotta mt-1">Please choose a size first.</p>
         </div>
-        <button
-          onclick="addToCart('${product.id}')"
-          class="bg-obsidian hover:bg-goldDark text-sand text-sm font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer flex items-center gap-2">
-          <span>+ Add to Bag</span>
-        </button>
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs text-stone-400 block">In Stock</span>
+            <span id="price-${product.id}" class="text-lg font-bold text-obsidian">${formatKES(product.price)}</span>
+          </div>
+          <button
+            onclick="addFromCard('${product.id}')"
+            class="bg-obsidian hover:bg-goldDark text-sand text-sm font-medium px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
+            + Add to Bag
+          </button>
+        </div>
       </div>
     </div>
   `).join("");
@@ -272,16 +291,73 @@ function renderBundles() {
   `).join("");
 }
 
-// Add Single Item to Cart
-function addToCart(productId) {
-  const product = PRODUCTS.find(p => p.id === productId);
-  if (!product) return;
+// ---------- Sizes ----------
+function getProduct(id) {
+  return PRODUCTS.find(p => p.id === id);
+}
 
-  const existing = cart.find(item => item.id === productId);
+function priceFor(product, size) {
+  const s = product.sizes && product.sizes.find(x => x.label === size);
+  return s && s.price != null ? s.price : product.price;
+}
+
+function sizeOptionsHTML(product, selected = "", forCart = false) {
+  const isDera = product.category === "dera";
+  const multi = product.sizes.length > 1;
+  let html = "";
+  if (isDera || (forCart && !selected)) {
+    html += `<option value="">${isDera ? "Select size" : "Select ml"}</option>`;
+  }
+  html += product.sizes.map(s => {
+    const label = isDera ? s.label : (multi ? `${s.label} — ${formatKES(s.price)}` : s.label);
+    return `<option value="${s.label}" ${s.label === selected ? "selected" : ""}>${label}</option>`;
+  }).join("");
+  return html;
+}
+
+function onCardSizeChange(productId) {
+  const product = getProduct(productId);
+  const sel = document.getElementById("size-" + productId);
+  const priceEl = document.getElementById("price-" + productId);
+  const err = document.getElementById("size-err-" + productId);
+  if (err) err.classList.add("hidden");
+  if (product && sel && priceEl) priceEl.textContent = formatKES(priceFor(product, sel.value));
+}
+
+function addFromCard(productId) {
+  const product = getProduct(productId);
+  const sel = document.getElementById("size-" + productId);
+  const size = sel ? sel.value : "";
+  if (product.category === "dera" && !size) {
+    const err = document.getElementById("size-err-" + productId);
+    if (err) err.classList.remove("hidden");
+    if (sel) sel.focus();
+    return;
+  }
+  addToCart(productId, size || null);
+}
+
+// ---------- Cart ----------
+function cartKey(id, size) {
+  return id + "|" + (size || "");
+}
+
+// Add Single Item to Cart (size can be chosen later inside the bag)
+function addToCart(productId, size = null) {
+  const product = getProduct(productId);
+  if (!product) return;
+  if (!size && product.category.startsWith("perfume") && product.sizes.length === 1) {
+    size = product.sizes[0].label;
+  }
+  const key = cartKey(productId, size);
+  const existing = cart.find(item => item.key === key);
   if (existing) {
     existing.qty += 1;
   } else {
-    cart.push({ ...product, qty: 1 });
+    cart.push({
+      key, id: productId, name: product.name, category: product.category,
+      image: product.image, size: size, price: priceFor(product, size), qty: 1
+    });
   }
   updateCartUI();
   openCart();
@@ -290,44 +366,51 @@ function addToCart(productId) {
 // Add Bundle to Cart
 function addBundleToCart(deraId, perfumeId) {
   addToCart(deraId);
-  const p = PRODUCTS.find(x => x.id === perfumeId);
-  if (p) {
-    const existing = cart.find(item => item.id === perfumeId);
-    if (existing) existing.qty += 1;
-    else cart.push({ ...p, qty: 1 });
-  }
-  updateCartUI();
-  openCart();
+  addToCart(perfumeId);
 }
 
-function updateQty(productId, delta) {
-  const item = cart.find(i => i.id === productId);
+function updateQty(key, delta) {
+  const item = cart.find(i => i.key === key);
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.id !== productId);
+  if (item.qty <= 0) cart = cart.filter(i => i.key !== key);
+  updateCartUI();
+}
+
+function setCartSize(key, size) {
+  const item = cart.find(i => i.key === key);
+  if (!item) return;
+  const product = getProduct(item.id);
+  const newKey = cartKey(item.id, size);
+  const twin = cart.find(i => i.key === newKey && i !== item);
+  if (twin) {
+    twin.qty += item.qty;
+    cart = cart.filter(i => i !== item);
+  } else {
+    item.size = size || null;
+    item.key = newKey;
+    item.price = priceFor(product, size);
   }
   updateCartUI();
 }
 
-// Calculate Totals & Multi-Category Bundle Discount (5% when buying both a Dera & a Perfume)
+// Totals & 5% combo discount (when buying both a Dera & a Perfume)
 function getCartSummary() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const hasDera = cart.some(i => i.category === 'dera');
-  const hasPerfume = cart.some(i => i.category.startsWith('perfume'));
+  const hasDera = cart.some(i => i.category === "dera");
+  const hasPerfume = cart.some(i => i.category.startsWith("perfume"));
   const discount = (hasDera && hasPerfume) ? Math.round(subtotal * 0.05) : 0;
-  const total = subtotal - discount;
-  return { subtotal, discount, total, hasCombo: hasDera && hasPerfume };
+  return { subtotal, discount, total: subtotal - discount, hasCombo: hasDera && hasPerfume };
 }
 
 function updateCartUI() {
   const countBadge = document.getElementById("cart-count");
   const itemsContainer = document.getElementById("cart-items");
   const summaryContainer = document.getElementById("cart-summary");
+  const detailsBox = document.getElementById("checkout-details");
 
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
   if (countBadge) countBadge.textContent = totalItems;
-
   if (!itemsContainer || !summaryContainer) return;
 
   if (cart.length === 0) {
@@ -335,63 +418,56 @@ function updateCartUI() {
       <div class="text-center py-12 text-stone-500">
         <p class="font-serif text-2xl text-obsidian mb-2">Your shopping bag is empty</p>
         <p class="text-sm">Explore our coastal silk Deras and fine perfumes to curate your signature look.</p>
-      </div>
-    `;
+      </div>`;
     summaryContainer.innerHTML = "";
+    if (detailsBox) detailsBox.classList.add("hidden");
     return;
   }
+  if (detailsBox) detailsBox.classList.remove("hidden");
 
-  itemsContainer.innerHTML = cart.map(item => `
-    <div class="flex gap-4 py-4 border-b border-stone-200 items-center">
+  itemsContainer.innerHTML = cart.map(item => {
+    const product = getProduct(item.id);
+    const missing = !item.size;
+    return `
+    <div class="flex gap-4 py-4 border-b border-stone-200 items-start">
       <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-cover rounded-lg bg-stone-100" />
       <div class="flex-1">
         <h4 class="font-serif text-lg font-semibold text-obsidian leading-tight">${item.name}</h4>
         <p class="text-xs text-stone-500 mb-2">${formatKES(item.price)} each</p>
+        <select onchange="setCartSize('${item.key}', this.value)" aria-label="Size"
+          class="mb-2 w-full text-xs rounded-lg border ${missing ? "border-terracotta bg-terracotta/5" : "border-stone-300 bg-white"} px-2 py-1.5">
+          ${sizeOptionsHTML(product, item.size || "", true)}
+        </select>
+        ${missing ? `<p class="text-[11px] text-terracotta mb-2">Choose a size to continue</p>` : ""}
         <div class="flex items-center gap-3">
-          <button onclick="updateQty('${item.id}', -1)" class="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center text-sm hover:bg-stone-100 cursor-pointer">-</button>
+          <button onclick="updateQty('${item.key}', -1)" class="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center text-sm hover:bg-stone-100 cursor-pointer">-</button>
           <span class="text-sm font-semibold">${item.qty}</span>
-          <button onclick="updateQty('${item.id}', 1)" class="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center text-sm hover:bg-stone-100 cursor-pointer">+</button>
+          <button onclick="updateQty('${item.key}', 1)" class="w-7 h-7 rounded-full border border-stone-300 flex items-center justify-center text-sm hover:bg-stone-100 cursor-pointer">+</button>
         </div>
       </div>
-      <div class="text-right font-bold text-obsidian text-sm">
-        ${formatKES(item.price * item.qty)}
-      </div>
-    </div>
-  `).join("");
+      <div class="text-right font-bold text-obsidian text-sm">${formatKES(item.price * item.qty)}</div>
+    </div>`;
+  }).join("");
 
   const { subtotal, discount, total, hasCombo } = getCartSummary();
-
   summaryContainer.innerHTML = `
     <div class="space-y-2 text-sm mb-4">
-      <div class="flex justify-between text-stone-600">
-        <span>Subtotal</span>
-        <span>${formatKES(subtotal)}</span>
-      </div>
+      <div class="flex justify-between text-stone-600"><span>Subtotal</span><span>${formatKES(subtotal)}</span></div>
       ${hasCombo ? `
-        <div class="flex justify-between text-sage font-medium">
-          <span>✨ Scent & Drape Combo (5% Off)</span>
-          <span>-${formatKES(discount)}</span>
-        </div>
+        <div class="flex justify-between text-sage font-medium"><span>✨ Scent & Drape Combo (5% Off)</span><span>-${formatKES(discount)}</span></div>
       ` : `
-        <p class="text-xs text-goldDark bg-gold/10 p-2 rounded-lg">
-          Tip: Add both a Dera & a Perfume to unlock 5% off your order!
-        </p>
+        <p class="text-xs text-goldDark bg-gold/10 p-2 rounded-lg">Tip: Add both a Dera & a Perfume to unlock 5% off your order!</p>
       `}
-      <div class="flex justify-between text-base font-bold text-obsidian pt-2 border-t border-stone-200">
-        <span>Total Payable</span>
-        <span>${formatKES(total)}</span>
-      </div>
+      <div class="flex justify-between text-base font-bold text-obsidian pt-2 border-t border-stone-200"><span>Total Payable</span><span>${formatKES(total)}</span></div>
       <div class="bg-sandDark p-3 rounded-xl border border-stone-200/80 text-xs text-stone-700 mt-2">
         <span class="font-semibold text-obsidian block">Payment Line (M-Pesa Send Money):</span>
         <span class="font-bold text-goldDark text-sm">${PAYMENT_PHONE_DISPLAY}</span>
       </div>
     </div>
-    <button
-      onclick="checkoutWhatsApp()"
-      class="w-full bg-obsidian hover:bg-goldDark text-sand font-semibold py-3.5 rounded-xl transition-colors cursor-pointer">
-      Complete Order via WhatsApp / M-Pesa
-    </button>
-  `;
+    <p id="checkout-error" class="hidden text-xs text-terracotta bg-terracotta/10 p-2 rounded-lg mb-3"></p>
+    <button onclick="checkoutWhatsApp()" class="w-full bg-obsidian hover:bg-goldDark text-sand font-semibold py-3.5 rounded-xl transition-colors cursor-pointer">
+      Confirm Details &amp; Send Order on WhatsApp
+    </button>`;
 }
 
 // Cart Drawer Controls
@@ -405,29 +481,107 @@ function closeCart() {
   document.getElementById("cart-backdrop").classList.add("hidden");
 }
 
-// Generate Official Order Invoice & Send via WhatsApp
+// ---------- Checkout: validate details first, then WhatsApp ----------
+function normalizeKenyanPhone(raw) {
+  let d = (raw || "").replace(/[^\d]/g, "");
+  if (d.startsWith("254")) d = d.slice(3);
+  else if (d.startsWith("0")) d = d.slice(1);
+  return /^[17]\d{8}$/.test(d) ? "254" + d : null;
+}
+
+function setFieldError(field, message) {
+  const input = document.getElementById(field);
+  const err = document.getElementById("err-" + field);
+  if (err) {
+    err.textContent = message || "";
+    err.classList.toggle("hidden", !message);
+  }
+  if (input) {
+    input.classList.toggle("border-terracotta", Boolean(message));
+    input.classList.toggle("border-stone-300", !message);
+  }
+}
+
+function validateCheckout() {
+  const val = id => (document.getElementById(id)?.value || "").trim();
+  const data = {
+    name: val("customer-name"),
+    phoneRaw: val("customer-phone"),
+    location: val("delivery-location"),
+    address: val("delivery-address"),
+    notes: val("order-notes")
+  };
+  data.phone = normalizeKenyanPhone(data.phoneRaw);
+
+  const problems = [];
+  const check = (field, bad, msg) => { setFieldError(field, bad ? msg : ""); if (bad) problems.push(field); };
+  check("customer-name", data.name.length < 3, "Enter your full name.");
+  check("customer-phone", !data.phone, "Enter a valid Kenyan number, e.g. 0712 345 678.");
+  check("delivery-location", data.location.length < 3, "Enter your town / county.");
+  check("delivery-address", data.address.length < 3, "Enter your estate, street or pickup point.");
+
+  const unsized = cart.filter(i => !i.size);
+  const box = document.getElementById("checkout-error");
+  let sizeMsg = "";
+  if (unsized.length) {
+    sizeMsg = "Please choose a size for: " + unsized.map(i => i.name).join(", ") + ".";
+  }
+  if (box) {
+    box.textContent = sizeMsg;
+    box.classList.toggle("hidden", !sizeMsg);
+  }
+  return { ok: problems.length === 0 && !unsized.length, data, firstBad: problems[0] };
+}
+
 function checkoutWhatsApp() {
   if (cart.length === 0) return;
-  const customerName = document.getElementById("customer-name")?.value.trim() || "Valued Client";
-  const deliveryLocation = document.getElementById("delivery-location")?.value.trim() || "Nationwide (Kenya)";
+  const { ok, data, firstBad } = validateCheckout();
+  if (!ok) {
+    const target = firstBad ? document.getElementById(firstBad) : document.getElementById("cart-items");
+    if (target) { target.scrollIntoView({ behavior: "smooth", block: "center" }); if (firstBad) target.focus(); }
+    return;
+  }
+
   const { subtotal, discount, total } = getCartSummary();
   const orderRef = "ZS-" + Math.floor(100000 + Math.random() * 900000);
+  const placed = new Date().toLocaleString("en-KE", { timeZone: "Africa/Nairobi", dateStyle: "medium", timeStyle: "short" });
 
-  let message = `*ZURI & SCENT — OFFICIAL ORDER RECEIPT*%0A`;
-  message += `Order Ref: *${orderRef}*%0A`;
-  message += `Client: ${customerName}%0A`;
-  message += `Delivery: ${deliveryLocation}%0A%0A`;
-  message += `*Items Ordered:*%0A`;
-  cart.forEach(item => {
-    message += `• ${item.name} (x${item.qty}) — ${formatKES(item.price * item.qty)}%0A`;
+  const lines = [
+    "*ZURI & SCENT — NEW ORDER*",
+    `Order Ref: *${orderRef}*`,
+    `Placed: ${placed}`,
+    "",
+    "*CUSTOMER DETAILS*",
+    `Name: ${data.name}`,
+    `Phone: +${data.phone} (chat: https://wa.me/${data.phone})`,
+    `Town / County: ${data.location}`,
+    `Address / Pickup point: ${data.address}`,
+    `Notes: ${data.notes || "None"}`,
+    "",
+    "*ITEMS ORDERED*"
+  ];
+  cart.forEach((item, i) => {
+    const kind = item.category === "dera" ? "Size" : "Bottle";
+    lines.push(`${i + 1}. ${item.name}`);
+    lines.push(`   ${kind}: ${item.size} | Qty: ${item.qty} | ${formatKES(item.price * item.qty)}`);
   });
-  message += `%0ASubtotal: ${formatKES(subtotal)}%0A`;
-  if (discount > 0) message += `Combo Discount (5%): -${formatKES(discount)}%0A`;
-  message += `*Total Payable: ${formatKES(total)}*%0A`;
-  message += `*M-Pesa Payment Number:* ${PAYMENT_PHONE_RAW}%0A%0A`;
-  message += `Please confirm dispatch details. Thank you!`;
+  lines.push("", `Subtotal: ${formatKES(subtotal)}`);
+  if (discount > 0) lines.push(`Combo Discount (5%): -${formatKES(discount)}`);
+  lines.push(
+    `*TOTAL PAYABLE: ${formatKES(total)}*`,
+    `Payment: M-Pesa Send Money to ${PAYMENT_PHONE_RAW}`,
+    "Status: Awaiting payment confirmation"
+  );
 
-  window.open(`https://wa.me/${BUSINESS_WHATSAPP}?text=${message}`, "_blank");
+  const url = `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(lines.join("\n"))}`;
+  window.open(url, "_blank");
+
+  const status = document.getElementById("checkout-status");
+  if (status) {
+    status.classList.remove("hidden");
+    status.innerHTML = `Order <strong>${orderRef}</strong> is ready. If WhatsApp did not open,
+      <a href="${url}" target="_blank" rel="noopener" class="underline font-semibold">tap here to send it</a>.`;
+  }
 }
 
 // Interactive Style & Scent Matcher
